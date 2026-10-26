@@ -18,25 +18,6 @@ try:
 except ImportError as exc:  # pragma: no cover - library is required for this simulation path
     raise ImportError("This script requires torch and torchsde for SDE simulation.") from exc
 
-# -----------------------------------------------------------------------------
-# Simple Heston-style dataset generator that writes the same CSV format as the
-# legacy script, but with much simpler code and Monte Carlo option pricing.
-#
-# Changes vs. the original:
-#   * RISK_FREE_RATE is a single plain float (no duplicate tensor override).
-#   * Discounting uses math.exp instead of torch.exp on a Python float.
-#   * `substeps` is actually passed to sdeint as dt = dt / substeps.
-#   * Full-truncation Euler: drift also uses max(v, 0).
-#   * torch.as_tensor instead of torch.tensor(<tensor>) (no copy warning).
-#   * Sigma is capped so the Feller condition 2*kappa*theta >= sigma^2 holds.
-#   * Option pricing is batched across paths (chunked) instead of 20k sdeint calls.
-#   * MC_SAMPLES raised from 250 to 2000 to reduce label noise.
-#   * Output directory is created if missing; debug print removed.
-#
-# NOTE: pricing under Q reuses the P-measure kappa and theta, i.e. it assumes
-# a zero volatility risk premium.
-# -----------------------------------------------------------------------------
-
 RISK_FREE_RATE = 0.06
 S0 = 1.0
 DT = 1.0 / 252.0
